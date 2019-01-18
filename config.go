@@ -1,0 +1,114 @@
+package extauth
+
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/mholt/caddy"
+	"github.com/mholt/caddy/caddyhttp/httpserver"
+)
+
+// Auth represents configuration information for the middleware
+type Auth struct {
+	Proxy   string
+	Headers bool
+	Cookies bool
+	Next    httpserver.Handler
+}
+
+func init() {
+	caddy.RegisterPlugin("extauth", caddy.Plugin{
+		ServerType: "http",
+		Action:     Setup,
+	})
+}
+
+// Setup is called by Caddy to parse the config block
+func Setup(c *caddy.Controller) error {
+	auth, err := parse(c)
+	if err != nil {
+		return err
+	}
+
+	c.OnStartup(func() error {
+		fmt.Println("Extauth middleware is initiated")
+		return nil
+	})
+
+	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
+		return &Auth{
+			Proxy:   auth.Proxy,
+			Headers: auth.Headers,
+			Cookies: auth.Cookies,
+			Next:    next,
+		}
+	})
+
+	return nil
+}
+
+func parse(c *caddy.Controller) (*Auth, error) {
+
+	def := &Auth{
+		Cookies: true,
+		Headers: true,
+	}
+
+	for c.Next() {
+		args := c.RemainingArgs()
+		switch len(args) {
+		case 0:
+			// no argument passed, check the config block
+			var err error
+			for c.NextBlock() {
+				switch c.Val() {
+				case "proxy":
+					if !c.NextArg() {
+						// we are expecting a value
+						return nil, c.ArgErr()
+					}
+					def.Proxy = c.Val()
+					if c.NextArg() {
+						// we are expecting only one value.
+						return nil, c.ArgErr()
+					}
+				case "cookies":
+					if !c.NextArg() {
+						return nil, c.ArgErr()
+					}
+					def.Cookies, err = strconv.ParseBool(c.Val())
+					if err != nil {
+						return nil, c.ArgErr()
+					}
+					if c.NextArg() {
+						return nil, c.ArgErr()
+					}
+				case "headers":
+					if !c.NextArg() {
+						return nil, c.ArgErr()
+					}
+					def.Headers, err = strconv.ParseBool(c.Val())
+					if err != nil {
+						return nil, c.ArgErr()
+					}
+					if c.NextArg() {
+						return nil, c.ArgErr()
+					}
+				default:
+					return nil, c.Errf("unsupported token_source: '%s'", args[0])
+				}
+			}
+		case 1:
+			def.Proxy = args[0]
+		default:
+			// we want only one argument max
+			return nil, c.ArgErr()
+		}
+	}
+
+	if len(def.Proxy) == 0 {
+		return nil, fmt.Errorf("No proxy for extauth configured")
+	}
+
+	return def, nil
+}
