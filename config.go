@@ -2,7 +2,9 @@ package extauth
 
 import (
 	"fmt"
+	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/mholt/caddy"
 	"github.com/mholt/caddy/caddyhttp/httpserver"
@@ -10,10 +12,14 @@ import (
 
 // Auth represents configuration information for the middleware
 type Auth struct {
-	Proxy   string
-	Headers bool
-	Cookies bool
-	Next    httpserver.Handler
+	Proxy              string
+	Headers            bool
+	Cookies            bool
+	Timeout            time.Duration
+	InsecureSkipVerify bool
+	Next               httpserver.Handler
+
+	client *http.Client
 }
 
 func init() {
@@ -50,8 +56,10 @@ func Setup(c *caddy.Controller) error {
 func parse(c *caddy.Controller) (*Auth, error) {
 
 	def := &Auth{
-		Cookies: true,
-		Headers: true,
+		Cookies:            true,
+		Headers:            true,
+		Timeout:            time.Duration(30 * time.Second),
+		InsecureSkipVerify: false,
 	}
 
 	for c.Next() {
@@ -92,6 +100,16 @@ func parse(c *caddy.Controller) (*Auth, error) {
 						return nil, c.ArgErr()
 					}
 					if c.NextArg() {
+						return nil, c.ArgErr()
+					}
+				case "insecure_skip_verify":
+					def.InsecureSkipVerify = true
+				case "timeout":
+					if !c.NextArg() {
+						return nil, c.ArgErr()
+					}
+					def.Timeout, err = time.ParseDuration(c.Val())
+					if err != nil {
 						return nil, c.ArgErr()
 					}
 				default:
