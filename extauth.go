@@ -3,14 +3,12 @@ package extauth
 import (
 	"crypto/tls"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 )
 
 func (a *Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 
-	log.Printf("called with request: %v\n", r)
 	// create client if it doesn't exist, in normal operation client should be nil
 	// but having the client as part of the auth struct is useful for testing
 	if a.client == nil {
@@ -18,7 +16,6 @@ func (a *Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	}
 	a.client.Timeout = a.Timeout
 
-	log.Printf("client: %v\n", a.client)
 	url, err := url.Parse(a.Proxy)
 	if err != nil {
 		return handleUnathorized(w, nil), nil
@@ -41,6 +38,8 @@ func (a *Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 
 	if a.Headers {
 		req.Header = r.Header
+		// Retain original host header
+		req.Host = r.Host
 	}
 
 	resp, err := a.client.Do(req)
@@ -48,7 +47,6 @@ func (a *Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 		return handleUnathorized(w, nil), nil
 	}
 	defer resp.Body.Close()
-	log.Printf("%v\n", resp)
 
 	if resp.StatusCode == http.StatusOK {
 		for _, c := range resp.Cookies() {
