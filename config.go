@@ -2,6 +2,7 @@ package extauth
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -23,14 +24,17 @@ type Auth struct {
 }
 
 func init() {
+	log.Println("Initializing extauth...")
 	caddy.RegisterPlugin("extauth", caddy.Plugin{
 		ServerType: "http",
 		Action:     Setup,
 	})
+	log.Println("success...")
 }
 
 // Setup is called by Caddy to parse the config block
 func Setup(c *caddy.Controller) error {
+	log.Println("going to setup...")
 	auth, err := parse(c)
 	if err != nil {
 		return err
@@ -41,12 +45,15 @@ func Setup(c *caddy.Controller) error {
 		return nil
 	})
 
+	log.Printf("got auth config: %+v", auth)
 	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
 		return &Auth{
-			Proxy:   auth.Proxy,
-			Headers: auth.Headers,
-			Cookies: auth.Cookies,
-			Next:    next,
+			Proxy:              auth.Proxy,
+			Headers:            auth.Headers,
+			Cookies:            auth.Cookies,
+			Timeout:            auth.Timeout,
+			InsecureSkipVerify: auth.InsecureSkipVerify,
+			Next:               next,
 		}
 	})
 
@@ -66,6 +73,7 @@ func parse(c *caddy.Controller) (*Auth, error) {
 		args := c.RemainingArgs()
 		switch len(args) {
 		case 0:
+			log.Printf("here")
 			// no argument passed, check the config block
 			var err error
 			for c.NextBlock() {
@@ -113,13 +121,15 @@ func parse(c *caddy.Controller) (*Auth, error) {
 						return nil, c.ArgErr()
 					}
 				default:
-					return nil, c.Errf("unsupported token_source: '%s'", args[0])
+					return nil, c.Errf("unsupported directive: '%s'", args[0])
 				}
 			}
 		case 1:
+			log.Printf("got proxy: %s", args[0])
 			def.Proxy = args[0]
 		default:
 			// we want only one argument max
+			log.Println("got an error for no args")
 			return nil, c.ArgErr()
 		}
 	}
