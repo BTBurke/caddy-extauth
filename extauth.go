@@ -40,6 +40,7 @@ func (a *Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 		req.Header = r.Header
 		// Retain original host header
 		req.Host = r.Host
+		req.Header.Add("X-URL", r.URL.String())
 	}
 
 	resp, err := a.client.Do(req)

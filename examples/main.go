@@ -14,10 +14,10 @@ const use string = `
 Try these examples:
 
 Rejected request - should get 401:
-curl http://127.0.0.1/unauthorized
+curl http://127.0.0.1:8080/unauthorized
 
 Allowed request - should get 200:
-curl http://127.0.0.1/ok
+curl http://127.0.0.1:8080/ok
 
 
 `
@@ -42,7 +42,7 @@ func main() {
 	signal.Notify(signalChan, os.Interrupt)
 	go func() {
 		<-signalChan
-		fmt.Println("\nReceived an interrupt, stopping services...\n")
+		fmt.Println("\nReceived an interrupt, stopping services...")
 		service.Close()
 		auth.Close()
 		close(cleanupDone)

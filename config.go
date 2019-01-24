@@ -25,7 +25,7 @@ type Auth struct {
 
 func init() {
 	log.Println("Initializing extauth...")
-	caddy.RegisterPlugin("extauth", caddy.Plugin{
+	caddy.RegisterPlugin("jwt", caddy.Plugin{
 		ServerType: "http",
 		Action:     Setup,
 	})
