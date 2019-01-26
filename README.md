@@ -1,10 +1,10 @@
-## JWT
+## EXTAUTH
 
 [![Build Status](https://travis-ci.org/BTBurke/caddy-extauth.svg?branch=master)](https://travis-ci.org/BTBurke/caddy-extauth)
 
 **External Authorization Middleware for Caddy**
 
-This middleware implements an authorization layer for [Caddy](https://caddyserver.com) by using an external service you provide to handle authorization for each request.  Unlike other authorization methods like [JWT](https://github.com/BTBurke/caddy-jwt), this middleware provides you with more flexibility to implement your own authorization scheme.
+This middleware implements an authorization layer for [Caddy](https://caddyserver.com) by using an external service you provide to handle authorization for each request.  Unlike other authorization middleware for Caddy like [JWT](https://github.com/BTBurke/caddy-jwt), this middleware provides you with more flexibility to implement your own authorization scheme.
 
 ### How it works
 
@@ -24,7 +24,7 @@ extauth https://localhost:9898
 
 ### Authorization request information
 
-Extauth will by default transparently proxy the request to your authorization service.  It includes all of the headers, cookies, and the URL of the originally requested resource so that you can use that information to make an authorization decision.
+Extauth will by proxy the request to your authorization service.  It includes all of the headers, cookies, and the host of the originally requested resource so that you can use that information to make an authorization decision.
 
 ### How to allow/deny a request
 
@@ -51,14 +51,15 @@ extauth {
 }
 ```
 
-See the examples folder for how you might want to use each mode in your auth service.
+See the [examples](https://github.com/BTBurke/caddy-extauth/tree/master/examples) folder for how you might want to use each mode in your auth service.
 
 ### Advanced Syntax
 
 You can optionally turn off headers, cookies, set a timeout, and skip TLS verification (for example, if you are using a self-signed cert):
 
 ```
-extauth https://service {
+extauth {
+  proxy https://auth:9000
   cookies false
   headers false
   timeout 30s
