@@ -1,0 +1,9 @@
+:8080
+extauth {
+    proxy http://127.0.0.1:9001
+    router
+}
+proxy / 127.0.0.1:9000
+
+
+
