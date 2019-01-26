@@ -4,7 +4,7 @@
 
 **External Authorization Middleware for Caddy**
 
-This middleware implements an authorization layer for [Caddy](https://caddyserver.com) by using an external service you provide to handle authorization for each request.  Unlike other authorization methods like JWT, this middleware provides you with more flexibility to implement your own authorization scheme.
+This middleware implements an authorization layer for [Caddy](https://caddyserver.com) by using an external service you provide to handle authorization for each request.  Unlike other authorization methods like [JWT](https://github.com/BTBurke/caddy-jwt), this middleware provides you with more flexibility to implement your own authorization scheme.
 
 ### How it works
 
@@ -35,6 +35,23 @@ For example, you could check an authorization token, then update it with a new s
 A consequence of this behavior is that if you want cookies or headers to continue on with the request through your other directives and to their ultimate destination, you **must copy anything you want to continue on in the request chain into the response** that you return from your service.
 
 If you return anything other than `200 OK`, the authorization will fail and a `401 Unauthorized` will be returned to the client immediately before evaluating any other Caddyfile directives.
+
+## Simple vs. Router Mode
+
+You can send a request to your authorization service in one of two modes: simple (default) or router mode.  In simple mode, the request always arrives at the root of your authorization API.  For example, if your user requests `https://example.com/deep/path?query=something` and your auth service is running on `http://localhost:9000`, you'll just receive a request to `http://localhost:9000/` without the path or query in the original request.  In order to recover the original path and query information, the simple mode sets a header `X-Auth-URL` with the full URL requested.  You can then parse that and take any action you like.
+
+In router mode, all URL parameters are propagated to your auth service.  So in the above case, in router mode you would receive a request to your auth service like `http://localhost:9000/deep/path?query=something`.  This is useful if you want to parse the request using a router implementation in your language of choice to route the request to different authorization handlers.
+
+To activate router mode, include the directive `router` in your config block:
+
+```
+extauth {
+  proxy http://localhost:9000
+  router
+}
+```
+
+See the examples folder for how you might want to use each mode in your auth service.
 
 ### Advanced Syntax
 

@@ -18,23 +18,21 @@ type Auth struct {
 	Cookies            bool
 	Timeout            time.Duration
 	InsecureSkipVerify bool
+	Router             bool
 	Next               httpserver.Handler
 
 	client *http.Client
 }
 
 func init() {
-	log.Println("Initializing extauth...")
-	caddy.RegisterPlugin("jwt", caddy.Plugin{
+	caddy.RegisterPlugin("extauth", caddy.Plugin{
 		ServerType: "http",
 		Action:     Setup,
 	})
-	log.Println("success...")
 }
 
 // Setup is called by Caddy to parse the config block
 func Setup(c *caddy.Controller) error {
-	log.Println("going to setup...")
 	auth, err := parse(c)
 	if err != nil {
 		return err
@@ -45,7 +43,6 @@ func Setup(c *caddy.Controller) error {
 		return nil
 	})
 
-	log.Printf("got auth config: %+v", auth)
 	httpserver.GetConfig(c).AddMiddleware(func(next httpserver.Handler) httpserver.Handler {
 		return &Auth{
 			Proxy:              auth.Proxy,
@@ -53,6 +50,7 @@ func Setup(c *caddy.Controller) error {
 			Cookies:            auth.Cookies,
 			Timeout:            auth.Timeout,
 			InsecureSkipVerify: auth.InsecureSkipVerify,
+			Router:             auth.Router,
 			Next:               next,
 		}
 	})
@@ -66,6 +64,7 @@ func parse(c *caddy.Controller) (*Auth, error) {
 		Cookies:            true,
 		Headers:            true,
 		Timeout:            time.Duration(30 * time.Second),
+		Router:             false,
 		InsecureSkipVerify: false,
 	}
 
@@ -73,11 +72,12 @@ func parse(c *caddy.Controller) (*Auth, error) {
 		args := c.RemainingArgs()
 		switch len(args) {
 		case 0:
-			log.Printf("here")
 			// no argument passed, check the config block
 			var err error
 			for c.NextBlock() {
 				switch c.Val() {
+				case "router":
+					def.Router = true
 				case "proxy":
 					if !c.NextArg() {
 						// we are expecting a value

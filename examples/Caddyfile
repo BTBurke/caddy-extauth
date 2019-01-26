@@ -1,6 +1,5 @@
-localhost:8080
-log
-jwt http://127.0.0.1:9001
+:8080
+extauth http://127.0.0.1:9001
 proxy / 127.0.0.1:9000
 
 

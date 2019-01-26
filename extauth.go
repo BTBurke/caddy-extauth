@@ -29,6 +29,10 @@ func (a *Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	if err != nil {
 		return handleUnathorized(w, nil), nil
 	}
+	// in router mode, deep copy the URL parameters to the auth request
+	if a.Router {
+		deepCopyURL(r, req)
+	}
 
 	if a.Cookies {
 		for _, c := range r.Cookies() {
@@ -40,7 +44,7 @@ func (a *Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 		req.Header = r.Header
 		// Retain original host header
 		req.Host = r.Host
-		req.Header.Add("X-URL", r.URL.String())
+		req.Header.Add("X-Auth-URL", r.URL.String())
 	}
 
 	resp, err := a.client.Do(req)
@@ -65,4 +69,13 @@ func handleUnathorized(w http.ResponseWriter, resp []byte) int {
 	w.WriteHeader(http.StatusUnauthorized)
 	w.Write(resp)
 	return http.StatusUnauthorized
+}
+
+func deepCopyURL(from, to *http.Request) {
+	to.URL.User = from.URL.User
+	to.URL.Path = from.URL.Path
+	to.URL.RawPath = from.URL.Path
+	to.URL.ForceQuery = from.URL.ForceQuery
+	to.URL.RawQuery = from.URL.RawQuery
+	to.URL.Fragment = from.URL.Fragment
 }
