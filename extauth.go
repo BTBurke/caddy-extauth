@@ -66,7 +66,6 @@ func (a *Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 }
 
 func handleUnathorized(w http.ResponseWriter, resp []byte) int {
-	w.WriteHeader(http.StatusUnauthorized)
 	w.Write(resp)
 	return http.StatusUnauthorized
 }
