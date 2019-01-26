@@ -6,7 +6,7 @@
 
 **External Authorization Middleware for Caddy**
 
-This middleware implements an authorization layer for [Caddy](https://caddyserver.com) by using an external service you provide to handle authorization for each request.  Unlike other authorization middleware for Caddy like [JWT](https://github.com/BTBurke/caddy-jwt), this middleware provides you with more flexibility to implement your own authorization scheme.
+This middleware implements an authorization layer for [Caddy](https://caddyserver.com) by using an external service (aka a forwarding service) you provide to handle authorization for each request.  Unlike other authorization middleware for Caddy like [JWT](https://github.com/BTBurke/caddy-jwt), this middleware provides you with more flexibility to implement your own authorization scheme.
 
 ### How it works
 

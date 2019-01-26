@@ -84,10 +84,8 @@ func TestAuthorization(t *testing.T) {
 		req := httptest.NewRequest("GET", "http://protected.local", nil)
 		w := httptest.NewRecorder()
 		status, err := auth.ServeHTTP(w, req)
-		resp := w.Result()
 		assert.NoError(t, err)
 		assert.Equal(t, test.status, status)
-		assert.Equal(t, test.status, resp.StatusCode)
 	}
 }
 

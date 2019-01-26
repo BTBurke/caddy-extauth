@@ -2,7 +2,6 @@ package extauth
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -126,11 +125,9 @@ func parse(c *caddy.Controller) (*Auth, error) {
 				}
 			}
 		case 1:
-			log.Printf("got proxy: %s", args[0])
 			def.Proxy = args[0]
 		default:
 			// we want only one argument max
-			log.Println("got an error for no args")
 			return nil, c.ArgErr()
 		}
 	}
