@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/mholt/caddy"
@@ -136,6 +137,9 @@ func parse(c *caddy.Controller) (*Auth, error) {
 
 	if len(def.Proxy) == 0 {
 		return nil, fmt.Errorf("No proxy for extauth configured")
+	}
+	if !strings.HasPrefix(def.Proxy, "http") {
+		def.Proxy = "http://" + def.Proxy
 	}
 
 	return def, nil
