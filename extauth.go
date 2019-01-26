@@ -62,6 +62,9 @@ func (a *Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
 	}
 
 	respReason, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return handleUnathorized(w, nil), nil
+	}
 	return handleUnathorized(w, respReason), nil
 }
 
