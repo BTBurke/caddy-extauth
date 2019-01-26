@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/BTBurke/caddy-extauth.svg?branch=master)](https://travis-ci.org/BTBurke/caddy-extauth)
 
-** This is a beta quality plugin for authorization that is undergoing testing.**
+**This is a beta quality plugin for authorization that is undergoing testing.**
 
 **External Authorization Middleware for Caddy**
 
