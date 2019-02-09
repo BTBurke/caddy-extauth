@@ -26,7 +26,7 @@ extauth https://localhost:9898
 
 ### Authorization request information
 
-Extauth will by proxy the request to your authorization service.  It includes all of the headers, cookies, and the host of the originally requested resource so that you can use that information to make an authorization decision.
+Extauth will proxy the request to your authorization service and features two different modes for proxying behavior depending on how you want to build your auth service (see below on simple vs. router mode.)  The request to your service includes all of the headers, cookies, and the host of the originally requested resource so that you can use that information to make an authorization decision.
 
 ### How to allow/deny a request
 
