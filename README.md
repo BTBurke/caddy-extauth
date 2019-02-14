@@ -57,7 +57,7 @@ See the [examples](https://github.com/BTBurke/caddy-extauth/tree/master/examples
 
 ### Advanced Syntax
 
-You can optionally turn off headers, cookies, set a timeout, and skip TLS verification (for example, if you are using a self-signed cert):
+You can optionally turn off headers, cookies, set a timeout, skip TLS verification (for example, if you are using a self-signed cert), and only check requests to certain path prefixes:
 
 ```
 extauth {
@@ -66,5 +66,6 @@ extauth {
   headers false
   timeout 30s
   insecure_skip_verify true  
+  prefixes /api /private
 }
 ```

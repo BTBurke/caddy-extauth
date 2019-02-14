@@ -5,9 +5,23 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 func (a *Auth) ServeHTTP(w http.ResponseWriter, r *http.Request) (int, error) {
+	// Before anything else, see if we need to check this request and short circuit if not.
+	if len(a.Prefixes) != 0 {
+		skipAuthorization := true
+		for _, prefix := range a.Prefixes {
+			if strings.HasPrefix(r.URL.Path, prefix) {
+				skipAuthorization = false
+				break
+			}
+		}
+		if skipAuthorization {
+			return a.Next.ServeHTTP(w, r)
+		}
+	}
 
 	// create client if it doesn't exist, in normal operation client should be nil
 	// but having the client as part of the auth struct is useful for testing

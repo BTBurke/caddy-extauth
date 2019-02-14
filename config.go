@@ -19,6 +19,7 @@ type Auth struct {
 	Timeout            time.Duration
 	InsecureSkipVerify bool
 	Router             bool
+	Prefixes           []string
 	Next               httpserver.Handler
 
 	client *http.Client
@@ -51,6 +52,7 @@ func Setup(c *caddy.Controller) error {
 			Timeout:            auth.Timeout,
 			InsecureSkipVerify: auth.InsecureSkipVerify,
 			Router:             auth.Router,
+			Prefixes:           auth.Prefixes,
 			Next:               next,
 		}
 	})
@@ -112,6 +114,13 @@ func parse(c *caddy.Controller) (*Auth, error) {
 					}
 				case "insecure_skip_verify":
 					def.InsecureSkipVerify = true
+				case "prefixes":
+					for c.NextArg() {
+						def.Prefixes = append(def.Prefixes, c.Val())
+					}
+					if len(def.Prefixes) == 0 {
+						return nil, c.ArgErr()
+					}
 				case "timeout":
 					if !c.NextArg() {
 						return nil, c.ArgErr()

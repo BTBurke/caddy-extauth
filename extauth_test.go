@@ -142,3 +142,44 @@ func TestURLPassThru(t *testing.T) {
 	assert.Equal(t, "testing", urlR.Query().Get("test"))
 	assert.Equal(t, "/path/1/2/3", urlR.Path)
 }
+
+func TestPrefix(t *testing.T) {
+	tests := []struct {
+		path              string
+		prefixes          []string
+		authServerHandler http.HandlerFunc
+		status            int
+	}{
+		{"", []string{"/private"}, authorizedHandler, http.StatusOK},
+		{"", []string{"/private"}, forbiddenHandler, http.StatusOK},
+		{"", []string{}, authorizedHandler, http.StatusOK},
+		{"", []string{}, forbiddenHandler, http.StatusUnauthorized},
+
+		{"/public", []string{"/private"}, authorizedHandler, http.StatusOK},
+		{"/public", []string{"/private"}, forbiddenHandler, http.StatusOK},
+		{"/public", []string{}, authorizedHandler, http.StatusOK},
+		{"/public", []string{}, forbiddenHandler, http.StatusUnauthorized},
+
+		{"/private", []string{"/private"}, authorizedHandler, http.StatusOK},
+		{"/private", []string{"/private"}, forbiddenHandler, http.StatusUnauthorized},
+		{"/private", []string{}, authorizedHandler, http.StatusOK},
+		{"/private", []string{}, forbiddenHandler, http.StatusUnauthorized},
+	}
+
+	for _, test := range tests {
+		ts := httptest.NewServer(test.authServerHandler)
+		defer ts.Close()
+		auth := &Auth{
+			Proxy:    ts.URL,
+			Prefixes: test.prefixes,
+			Next:     httpserver.HandlerFunc(makePassThru(nil, nil)),
+			client:   ts.Client(),
+		}
+		req := httptest.NewRequest("GET", "http://protected.local"+test.path, nil)
+		w := httptest.NewRecorder()
+		_, err := auth.ServeHTTP(w, req)
+		assert.NoError(t, err)
+		assert.Equal(t, test.status, w.Code)
+	}
+
+}
