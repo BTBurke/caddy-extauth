@@ -26,14 +26,46 @@ func TestParsing(t *testing.T) {
 		shouldErr bool
 		expect    Auth
 	}{
-		{"extauth https://testserver:9000", false, Auth{Proxy: "https://testserver:9000", Headers: true, Cookies: true, Timeout: time.Duration(30 * time.Second)}},
-		{"extauth {\nproxy https://testserver:9000\n}", false, Auth{Proxy: "https://testserver:9000", Headers: true, Cookies: true, Timeout: time.Duration(30 * time.Second)}},
-		{"extauth {\nproxy testserver:9000\n}", false, Auth{Proxy: "http://testserver:9000", Headers: true, Cookies: true, Timeout: time.Duration(30 * time.Second)}},
-		{"extauth", true, Auth{}},
-		{"extauth {\nproxy https://testserver:9000\nprefixes /api /private\n}", false, Auth{Proxy: "https://testserver:9000", Headers: true, Cookies: true, Timeout: time.Duration(30 * time.Second), Prefixes: []string{"/api", "/private"}}},
-		{"extauth {\nproxy https://testserver:9000\nprefixes\n}", true, Auth{}},
-		{"extauth {\nproxy https://testserver:9000\ncookies false\nheaders false\n}", false, Auth{Proxy: "https://testserver:9000", Headers: false, Cookies: false, Timeout: time.Duration(30 * time.Second)}},
-		{"extauth {\nproxy https://testserver:9000\ncookies false\nheaders false\ntimeout 60s\ninsecure_skip_verify\nrouter\n}", false, Auth{Proxy: "https://testserver:9000", Router: true, Headers: false, Cookies: false, Timeout: time.Duration(60 * time.Second), InsecureSkipVerify: true}},
+		{
+			"extauth",
+			true,
+			Auth{},
+		},
+		{
+			"extauth {\nproxy https://testserver:9000\nprefixes\n}",
+			true,
+			Auth{},
+		},
+		{
+			"extauth https://testserver:9000",
+			false,
+			Auth{Proxy: "https://testserver:9000", Headers: true, Cookies: true, Timeout: time.Duration(30 * time.Second)},
+		},
+		{
+			"extauth {\nproxy https://testserver:9000\n}",
+			false,
+			Auth{Proxy: "https://testserver:9000", Headers: true, Cookies: true, Timeout: time.Duration(30 * time.Second)},
+		},
+		{
+			"extauth {\nproxy testserver:9000\n}",
+			false,
+			Auth{Proxy: "http://testserver:9000", Headers: true, Cookies: true, Timeout: time.Duration(30 * time.Second)},
+		},
+		{
+			"extauth {\nproxy https://testserver:9000\nprefixes /api /private\n}",
+			false,
+			Auth{Proxy: "https://testserver:9000", Headers: true, Cookies: true, Timeout: time.Duration(30 * time.Second), Prefixes: []string{"/api", "/private"}},
+		},
+		{
+			"extauth {\nproxy https://testserver:9000\ncookies false\nheaders false\n}",
+			false,
+			Auth{Proxy: "https://testserver:9000", Headers: false, Cookies: false, Timeout: time.Duration(30 * time.Second)},
+		},
+		{
+			"extauth {\nproxy https://testserver:9000\ncookies false\nheaders false\ntimeout 60s\ninsecure_skip_verify\nrouter\n}",
+			false,
+			Auth{Proxy: "https://testserver:9000", Router: true, Headers: false, Cookies: false, Timeout: time.Duration(60 * time.Second), InsecureSkipVerify: true},
+		},
 	}
 	for _, test := range tests {
 		c := caddy.NewTestController("http", test.input)
