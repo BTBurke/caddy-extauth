@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mholt/caddy/caddyhttp/httpserver"
+	"github.com/caddyserver/caddy/caddyhttp/httpserver"
 	"github.com/stretchr/testify/assert"
 )
 
